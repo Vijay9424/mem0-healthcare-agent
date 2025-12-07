@@ -1,12 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
-    experimental: {
-    serverActions: true,
-    turbo: false,
+
+  experimental: {
+    serverActions: {
+      allowedOrigins: ["*"],
+    },
+    serverSourceMaps: false, // 🔥 fixes "Invalid source map" spam in dev mode
   },
+
+  productionBrowserSourceMaps: false, // 🔥 prevents sourcemap warnings in prod too
 };
 
 export default nextConfig;

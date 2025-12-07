@@ -17,6 +17,10 @@ db.exec(`
     lastMessage TEXT,
     messages TEXT NOT NULL
   );
+
+  CREATE INDEX IF NOT EXISTS idx_chats_updatedAt ON chats(updatedAt DESC);
+  CREATE INDEX IF NOT EXISTS idx_chats_patientId ON chats(patientId);
+  CREATE INDEX IF NOT EXISTS idx_chats_role ON chats(role);
 `);
 
 export default db;

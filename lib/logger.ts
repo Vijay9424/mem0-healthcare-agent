@@ -5,6 +5,7 @@ import path from "path";
 export interface LogEntry {
   timestamp: string;
   model: string;
+  latencyMs?: number;
   finishReason?: string;
   role?: string;
   patientId?: string;

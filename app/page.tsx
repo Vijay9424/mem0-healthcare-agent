@@ -14,7 +14,8 @@ interface Conversation {
   title: string;
   role: Role;
   patientId: string;
-  createdAt: Date;
+  createdAt: number | null;
+  updatedAt: number | null;
   lastMessage?: string;
 }
 
@@ -66,12 +67,21 @@ export default function HomePage() {
         if (!res.ok) return;
 
         const data = await res.json();
-        const mapped: Conversation[] = data.map((c: any) => ({
+        const mapped: Conversation[] = (data as Array<{
+          id: string;
+          title: string;
+          role: string;
+          patientId: string;
+          createdAt: number | null;
+          updatedAt: number | null;
+          lastMessage?: string;
+        }>).map((c) => ({
           id: c.id,
-          title: c.title as string,
+          title: c.title,
           role: c.role as Role,
-          patientId: c.patientId as string,
-          createdAt: c.createdAt ? new Date(c.createdAt) : new Date(),
+          patientId: c.patientId,
+          createdAt: c.createdAt ?? null,
+          updatedAt: c.updatedAt ?? null,
           lastMessage: c.lastMessage ?? undefined,
         }));
 
@@ -98,7 +108,8 @@ export default function HomePage() {
       title: `${selectedRole} ↔ Patient ${patientId}`,
       role: selectedRole,
       patientId,
-      createdAt: new Date(),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     };
 
     setConversations((prev) => [newConversation, ...prev]);
@@ -116,13 +127,16 @@ export default function HomePage() {
     try {
       const res = await fetch(`/api/conversations/${conversationId}`);
       if (!res.ok) {
-        console.error("Failed to load conversation", await res.text());
+        const errorText = await res.text();
+        console.error("Failed to load conversation", errorText);
+        alert(`Failed to load conversation: ${res.statusText}`);
         return;
       }
       const history = await res.json();
       setMessages(history);
     } catch (error) {
       console.error("Error loading conversation", error);
+      alert("Failed to load conversation. Please try again.");
     }
   };
 
@@ -205,7 +219,7 @@ export default function HomePage() {
                   >
                     <div className="font-medium text-sm truncate">{conv.title}</div>
                     <div className="text-xs text-slate-400 mt-1">
-                      {format(conv.createdAt, "MMM d, h:mm a")}
+                      {conv.createdAt ? format(conv.createdAt, "MMM d, h:mm a") : "Unknown date"}
                     </div>
                   </button>
 
@@ -257,9 +271,9 @@ export default function HomePage() {
             </div>
           )}
 
-          {messages.map((msg) => (
+          {messages.map((msg, index) => (
             <div
-              key={msg.id}
+              key={msg.id || `msg-${index}`}
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div

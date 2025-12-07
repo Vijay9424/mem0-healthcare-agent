@@ -3,7 +3,7 @@ import type { UIMessage } from "ai";
 import { generateId } from "ai";
 import db from "./db";
 
-export async function createChat(): Promise<string> {
+export function createChat(): string {
   const id = generateId();
   const now = Date.now();
   const emptyMessages = "[]";
@@ -18,9 +18,9 @@ export async function createChat(): Promise<string> {
   return id;
 }
 
-export async function loadChat(chatId: string): Promise<UIMessage[]> {
+export function loadChat(chatId: string): UIMessage[] {
   const row = db
-    .prepare<[{ id: string }], { messages: string }>(
+    .prepare<[string], { messages: string }>(
       `SELECT messages FROM chats WHERE id = ?`
     )
     .get(chatId);
@@ -41,12 +41,12 @@ interface SaveChatArgs {
   patientId?: string;
 }
 
-export async function saveChat({
+export function saveChat({
   chatId,
   messages,
   role,
   patientId,
-}: SaveChatArgs): Promise<void> {
+}: SaveChatArgs): void {
   const now = Date.now();
   const content = JSON.stringify(messages);
 
@@ -54,7 +54,7 @@ export async function saveChat({
   const lastText =
     lastMessage?.parts
       ?.filter((p) => p.type === "text")
-      .map((p: any) => p.text)
+      .map((p) => (p as { type: "text"; text: string }).text)
       .join(" ")
       .slice(0, 200) ?? null;
 
@@ -62,7 +62,7 @@ export async function saveChat({
     role && patientId ? `${role} ↔ Patient ${patientId}` : null;
 
   const existing = db
-    .prepare<[{ id: string }], { id: string }>(
+    .prepare<[string], { id: string }>(
       `SELECT id FROM chats WHERE id = ?`
     )
     .get(chatId);
@@ -107,7 +107,7 @@ export async function saveChat({
   }
 }
 
-export async function listChats() {
+export function listChats() {
   const rows = db
     .prepare(
       `SELECT id, role, patientId, title, createdAt, updatedAt, lastMessage
