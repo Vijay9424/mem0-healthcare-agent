@@ -34,7 +34,7 @@ export default function HomePage() {
     id: activeConversationId ?? undefined,
     transport: new DefaultChatTransport({
       api: "/api/chat",
-      // ✅ Frontend ALWAYS sends full history + chatId (+ role + patientId)
+      //Frontend ALWAYS sends full history + chatId (+ role + patientId)
       prepareSendMessagesRequest: ({ messages, id }) => {
         return {
           body: {
@@ -58,7 +58,7 @@ export default function HomePage() {
     (conv) => conv.role === selectedRole && conv.patientId === patientId
   );
 
-  // 🔄 Load persistent conversation list on first render
+  // Load persistent conversation list on first render
   useEffect(() => {
     const loadConversations = async () => {
       try {
